@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Data Galih Kumara</title>
+    <style>
+        /* RESET & BASE STYLES */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 20px;
+            padding-bottom: 80px; /* Space for bottom sheet if needed */
+        }
+
+        /* HEADER */
+        header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+        }
+
+        header p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-edit {
+            background-color: #e0f2fe;
+            color: #0284c7;
+        }
+
+        .btn-delete {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-cancel {
+            background-color: #f1f5f9;
+            color: #64748b;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* LIST CONTAINER */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* CARD STYLE */
+        .card {
+            background: var(--bg-card);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid var(--primary);
+        }
+
+        .card-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .card-info p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        /* MODAL / FORM OVERLAY */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: flex-end; /* Bottom sheet on mobile */
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal {
+            background: white;
+            width: 100%;
+            max-width: 500px; /* Limit width on desktop */
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            padding: 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        @media (min-width: 600px) {
+            .modal-overlay {
+                align-items: center;
+            }
+            .modal {
+                border-radius: 16px;
+                transform: translateY(20px);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            }
+            .modal-overlay.active .modal {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        /* FORM ELEMENTS */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* TOAST NOTIFICATION */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: #1e293b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <h1>Data Galih Kumara</h1>
+        <p>Manajemen Data Sederhana</p>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Add Button -->
+        <button class="btn btn-primary" onclick="openModal('add')">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Tambah Data Baru
+        </button>
+
+        <!-- List Area -->
+        <div id="listContainer" class="list-container">
+            <!-- Data will be injected here by JS -->
+        </div>
+    </main>
+
+    <!-- Modal Form (Add & Edit) -->
+    <div id="dataModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Tambah Data</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="dataForm" onsubmit="handleFormSubmit(event)">
+                <input type="hidden" id="dataId">
+                
+                <div class="form-group">
+                    <label class="form-label" for="inputJudul">Judul / Nama</label>
+                    <input type="text" id="inputJudul" class="form-input" placeholder="Contoh: Belanja Bulanan" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="inputDeskripsi">Deskripsi / Detail</label>
+                    <textarea id="inputDeskripsi" class="form-textarea" rows="3" placeholder="Tambahkan detail..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="inputKategori">Kategori</label>
+                    <select id="inputKategori" class="form-input">
+                        <option value="Pribadi">Pribadi</option>
+                        <option value="Pekerjaan">Pekerjaan</option>
+                        <option value="Penting">Penting</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Simpan Data</button>
+                <button type="button" class="btn btn-cancel" onclick="closeModal()">Batal</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal (Delete) -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Hapus Data?</h2>
+                <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <p style="margin-bottom: 20px; color: var(--text-muted);">
+                Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <button id="confirmDeleteBtn" class="btn btn-primary" style="background-color: var(--danger);">Ya, Hapus</button>
+            <button class="btn btn-cancel" onclick="closeDeleteModal()">Batal</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Berhasil disimpan</div>
+
+    <script>
+        // --- 1. STATE MANAGEMENT ---
+        // Kita menggunakan LocalStorage agar data tetap ada saat direfresh
+        const STORAGE_KEY = 'galih_kumara_data_v1';
+        let dataList = [];
+        let deleteTargetId = null;
+
+        // --- 2. INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+        });
+
+        // --- 3. CORE FUNCTIONS (CRUD) ---
+
+        // LOAD (READ)
+        function loadData() {
+            const storedData = localStorage.getItem(STORAGE_KEY);
+            if (storedData) {
+                dataList = JSON.parse(storedData);
+            } else {
+                // Data dummy awal jika kosong
+                dataList = [
+                    { id: Date.now(), title: 'Project Galih', desc: 'Membuat aplikasi CRUD mobile friendly', category: 'Pekerjaan' },
+                    { id: Date.now() + 1, title: 'Belanja', desc: 'Beras, Telur, Minyak', category: 'Pribadi' }
+                ];
+                saveData();
+            }
+            renderList();
+        }
+
+        // SAVE TO STORAGE
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dataList));
+            renderList();
+        }
+
+        // RENDER LIST (UI UPDATE)
+        function renderList() {
+            const container = document.getElementById('listContainer');
+            container.innerHTML = '';
+
+            if (dataList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>Belum ada data.</p>
+                        <small>Tekan tombol "Tambah Data Baru" untuk memulai.</small>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by newest first
+            const sortedData = [...dataList].sort((a, b) => b.id - a.id);
+
+            sortedData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                // Warna border kiri berdasarkan kategori (opsional, visual enhancement)
+                let borderStyle = 'border-left-color: var(--primary)';
+                if(item.category === 'Pribadi') borderStyle = 'border-left-color: var(--success)';
+                if(item.category === 'Penting') borderStyle = 'border-left-color: var(--danger)';
+                card.style.cssText = borderStyle;
+
+                card.innerHTML = `
+                    <div class="card-info">
+                        <h3>${escapeHtml(item.title)}</h3>
+                        <p>${escapeHtml(item.category)} • ${escapeHtml(item.desc)}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-sm btn-edit" onclick="openModal('edit', ${item.id})">Edit</button>
+                        <button class="btn btn-sm btn-delete" onclick="confirmDelete(${item.id})">Hapus</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // CREATE & UPDATE (HANDLE FORM SUBMIT)
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const idInput = document.getElementById('dataId').value;
+            const title = document.getElementById('inputJudul').value;
+            const desc = document.getElementById('inputDeskripsi').value;
+            const category = document.getElementById('inputKategori').value;
+
+            if (idInput) {
+                // UPDATE MODE
+                const index = dataList.findIndex(item => item.id == idInput);
+                if (index !== -1) {
+                    dataList[index] = { ...dataList[index], title, desc, category };
+                    showToast('Data berhasil diperbarui');
+                }
+            } else {
+                // CREATE MODE
+                const newData = {
+                    id: Date.now(),
+                    title: title,
+                    desc: desc,
+                    category: category
+                };
+                dataList.push(newData);
+                showToast('Data berhasil ditambahkan');
+            }
+
+            saveData();
+            closeModal();
+        }
+
+        // DELETE (EXECUTION)
+        function executeDelete() {
+            if (deleteTargetId !== null) {
+                dataList = dataList.filter(item => item.id !== deleteTargetId);
+                saveData();
+                showToast('Data dihapus');
+                closeDeleteModal();
+            }
+        }
+
+        // --- 4. HELPER FUNCTIONS ---
+
+        // Open Modal (Setup for Add or Edit)
+        function openModal(mode, id = null) {
+            const modal = document.getElementById('dataModal');
+            const title = document.getElementById('modalTitle');
+            const form = document.getElementById('dataForm');
+            
+            // Reset Form
+            form.reset();
+
+            if (mode === 'edit' && id) {
+                const item = dataList.find(d => d.id === id);
+                if (item) {
+                    title.textContent = 'Edit Data';
+                    document.getElementById('dataId').value = item.id;
+                    document.getElementById('inputJudul').value = item.title;
+                    document.getElementById('inputDeskripsi').value = item.desc;
+                    document.getElementById('inputKategori').value = item.category;
+                }
+            } else {
+                title.textContent = 'Tambah Data Baru';
+                document.getElementById('dataId').value = '';
+            }
+
+            modal.classList.add('active');
+        }
+
+        // Close Data Modal
+        function closeModal() {
+            document.getElementById('dataModal').classList.remove('active');
+        }
+
+        // Open Delete Confirmation
+        function confirmDelete(id) {
+            deleteTargetId = id;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        // Close Delete Modal
+        function closeDeleteModal() {
+            deleteTargetId = null;
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+
+        // Show Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Security: Prevent XSS
+        function escapeHtml(text) {
+            if (!text) return text;
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Event Listener untuk tombol konfirmasi hapus
+        document.getElementById('confirmDeleteBtn').addEventListener('click', executeDelete);
+
+        // Close modal when clicking outside (on overlay)
+        window.onclick = function(event) {
+            const dataModal = document.getElementById('dataModal');
+            const deleteModal = document.getElementById('deleteModal');
+            if (event.target === dataModal) {
+                closeModal();
+            }
+            if (event.target === deleteModal) {
+                closeDeleteModal();
+            }
+        }
+    </script>
+</body>
+</html>
